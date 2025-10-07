@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}分享成功 - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h4><i class="fas fa-check-circle"></i> 分享連結已建立！</h4>
+            </div>
+            <div class="card-body">
+                <!-- 檔案資訊 -->
+                <div class="alert alert-info mb-4">
+                    <h5><i class="fas fa-file"></i> 檔案資訊</h5>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>檔案名稱：</strong>{{ file.name }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>檔案大小：</strong>{{ file.get_size_display }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 分享連結 -->
+                <div class="mb-4">
+                    <label class="form-label"><strong>分享連結：</strong></label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="shareUrl" 
+                               value="{{ share_url }}" readonly>
+                        <button class="btn btn-primary" onclick="copyToClipboard()">
+                            <i class="fas fa-copy"></i> 複製連結
+                        </button>
+                    </div>
+                    <small class="text-muted">將此連結分享給其他人即可下載檔案</small>
+                </div>
+                
+                <!-- 分享設定 -->
+                <div class="alert alert-secondary">
+                    <h6><i class="fas fa-cog"></i> 分享設定</h6>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>過期時間：</strong>
+                            {% if share_link.expires_at %}
+                                {{ share_link.expires_at|date:"Y-m-d H:i" }}
+                            {% else %}
+                                永不過期
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>下載限制：</strong>
+                            {% if share_link.max_downloads %}
+                                最多 {{ share_link.max_downloads }} 次
+                            {% else %}
+                                無限制
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <strong>狀態：</strong>
+                        <span class="badge bg-success">已啟用</span>
+                    </div>
+                </div>
+                
+                <!-- 操作按鈕 -->
+                <div class="d-flex gap-2 mt-4">
+                    <a href="{% url 'storage:manage_shares' %}" class="btn btn-info">
+                        <i class="fas fa-list"></i> 管理所有分享
+                    </a>
+                    <a href="{% url 'storage:home' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> 返回首頁
+                    </a>
+                    <button class="btn btn-success" onclick="testShareLink()">
+                        <i class="fas fa-external-link-alt"></i> 測試連結
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard() {
+    const urlInput = document.getElementById('shareUrl');
+    urlInput.select();
+    document.execCommand('copy');
+    
+    // 顯示提示
+    alert('連結已複製到剪貼簿！');
+}
+
+function testShareLink() {
+    const url = document.getElementById('shareUrl').value;
+    window.open(url, '_blank');
+}
+</script>
+{% endblock %}

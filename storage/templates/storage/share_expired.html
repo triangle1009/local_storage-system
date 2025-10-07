@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}分享連結已失效 - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h4><i class="fas fa-exclamation-triangle"></i> 分享連結已失效</h4>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-link fa-5x text-muted mb-4"></i>
+                <h5 class="mb-3">很抱歉，此分享連結已無法使用</h5>
+                
+                <div class="alert alert-info">
+                    <strong>可能的原因：</strong>
+                    <ul class="mb-0 mt-2 text-start">
+                        <li>分享連結已過期</li>
+                        <li>已達到最大下載次數限制</li>
+                        <li>檔案擁有者已停用此連結</li>
+                        <li>檔案已被刪除</li>
+                    </ul>
+                </div>
+                
+                <p class="text-muted">
+                    請聯繫檔案分享者獲取新的連結，或確認連結是否正確。
+                </p>
+                
+                <a href="{% url 'storage:home' %}" class="btn btn-primary">
+                    <i class="fas fa-home"></i> 回到首頁
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

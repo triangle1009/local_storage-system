@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}刪除分享連結 - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4><i class="fas fa-trash"></i> 刪除分享連結</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>警告！</strong>刪除後，此分享連結將立即失效，無法復原。
+                </div>
+                
+                <p>您確定要刪除以下分享連結嗎？</p>
+                
+                <div class="mb-3 p-3 bg-light rounded">
+                    <strong>檔案：</strong>{{ share_link.file.name }}<br>
+                    <strong>建立時間：</strong>{{ share_link.created_at|date:"Y-m-d H:i:s" }}<br>
+                    <strong>下載次數：</strong>{{ share_link.download_count }}
+                    {% if share_link.max_downloads %}
+                        / {{ share_link.max_downloads }}
+                    {% endif %}
+                    <br>
+                    <strong>狀態：</strong>
+                    {% if share_link.can_download %}
+                        <span class="badge bg-success">可用</span>
+                    {% else %}
+                        <span class="badge bg-secondary">失效</span>
+                    {% endif %}
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 確定刪除
+                        </button>
+                        <a href="{% url 'storage:manage_shares' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}管理分享連結 - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-share-alt"></i> 我的分享連結</h2>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-list"></i> 分享列表</h5>
+                <a href="{% url 'storage:home' %}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-arrow-left"></i> 返回首頁
+                </a>
+            </div>
+            <div class="card-body">
+                {% if share_links %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>檔案名稱</th>
+                                    <th>建立時間</th>
+                                    <th>過期時間</th>
+                                    <th>下載次數</th>
+                                    <th>狀態</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for share in share_links %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-file text-muted me-2"></i>
+                                        <strong>{{ share.file.name|truncatechars:30 }}</strong>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ share.created_at|date:"Y-m-d H:i" }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if share.expires_at %}
+                                            <small class="text-muted">
+                                                {{ share.expires_at|date:"Y-m-d H:i" }}
+                                            </small>
+                                            {% if share.is_expired %}
+                                                <br><span class="badge bg-danger">已過期</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-success">永久</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ share.download_count }}</strong>
+                                        {% if share.max_downloads %}
+                                            / {{ share.max_downloads }}
+                                        {% else %}
+                                            / ∞
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if share.can_download %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> 可用
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-ban"></i> 失效
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <!-- 複製連結 -->
+                                            <button class="btn btn-outline-primary" 
+                                                    onclick="copyShareLink('{{ request.scheme }}://{{ request.get_host }}/share/{{ share.token }}/')"
+                                                    title="複製連結">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                            
+                                            <!-- 測試連結 -->
+                                            <a href="{% url 'storage:shared_download' share.token %}" 
+                                               class="btn btn-outline-info" 
+                                               target="_blank"
+                                               title="測試連結">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                            
+                                            <!-- 啟用/停用 -->
+                                            <a href="{% url 'storage:toggle_share' share.pk %}" 
+                                               class="btn btn-outline-warning"
+                                               title="{% if share.is_active %}停用{% else %}啟用{% endif %}">
+                                                <i class="fas fa-{% if share.is_active %}pause{% else %}play{% endif %}"></i>
+                                            </a>
+                                            
+                                            <!-- 刪除 -->
+                                            <a href="{% url 'storage:delete_share' share.pk %}" 
+                                               class="btn btn-outline-danger"
+                                               title="刪除">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-share-alt text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="text-muted mt-3">尚未建立任何分享連結</h4>
+                        <p class="text-muted">到檔案列表中點擊「分享」按鈕建立分享連結</p>
+                        <a href="{% url 'storage:home' %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-folder-open"></i> 前往檔案列表
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyShareLink(url) {
+    // 創建臨時輸入框
+    const tempInput = document.createElement('input');
+    tempInput.value = url;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+    
+    // 顯示提示
+    alert('分享連結已複製到剪貼簿！\n' + url);
+}
+</script>
+{% endblock %}

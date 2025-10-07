@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}刪除資料夾 - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4><i class="fas fa-folder-minus"></i> 刪除資料夾</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>危險操作！</strong>此操作會刪除資料夾及其所有內容，且無法復原。
+                </div>
+                
+                <p>您確定要刪除以下資料夾嗎？</p>
+                
+                <div class="mb-3 p-3 bg-light rounded">
+                    <strong>資料夾名稱：</strong>{{ folder.name }}<br>
+                    <strong>建立時間：</strong>{{ folder.created_at|date:"Y-m-d H:i:s" }}<br>
+                    <strong>路徑：</strong>{{ folder.get_path }}
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> 確定刪除
+                        </button>
+                        <a href="{% url 'storage:home' %}{% if folder.parent %}?folder={{ folder.parent.pk }}{% endif %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

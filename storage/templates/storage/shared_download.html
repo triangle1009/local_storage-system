@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}下載檔案 - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-download"></i> 檔案下載</h4>
+            </div>
+            <div class="card-body">
+                <!-- 檔案預覽 -->
+                <div class="text-center mb-4">
+                    {% if file.is_image %}
+                        <i class="fas fa-image text-success" style="font-size: 5rem;"></i>
+                    {% elif file.is_video %}
+                        <i class="fas fa-video text-info" style="font-size: 5rem;"></i>
+                    {% elif file.is_audio %}
+                        <i class="fas fa-music text-warning" style="font-size: 5rem;"></i>
+                    {% elif file.is_document %}
+                        <i class="fas fa-file-pdf text-danger" style="font-size: 5rem;"></i>
+                    {% else %}
+                        <i class="fas fa-file text-secondary" style="font-size: 5rem;"></i>
+                    {% endif %}
+                </div>
+                
+                <!-- 檔案資訊 -->
+                <div class="alert alert-info">
+                    <h5 class="mb-3"><i class="fas fa-info-circle"></i> 檔案資訊</h5>
+                    <table class="table table-borderless mb-0">
+                        <tr>
+                            <td class="text-muted" style="width: 30%;">檔案名稱</td>
+                            <td><strong>{{ file.name }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">檔案大小</td>
+                            <td>{{ file.get_size_display }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">檔案類型</td>
+                            <td>{{ file.file_type|default:"未知" }}</td>
+                        </tr>
+                        {% if file.description %}
+                        <tr>
+                            <td class="text-muted">描述</td>
+                            <td>{{ file.description }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+                
+                <!-- 分享資訊 -->
+                <div class="alert alert-secondary">
+                    <h6><i class="fas fa-share-alt"></i> 分享資訊</h6>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">分享者</small><br>
+                            <strong>{{ share_link.created_by.username }}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">已下載次數</small><br>
+                            <strong>{{ share_link.download_count }}</strong>
+                            {% if share_link.max_downloads %}
+                                / {{ share_link.max_downloads }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if share_link.expires_at %}
+                    <div class="mt-2">
+                        <small class="text-muted">過期時間</small><br>
+                        <strong>{{ share_link.expires_at|date:"Y-m-d H:i" }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- 下載按鈕 -->
+                <form method="post" class="text-center">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-download"></i> 立即下載
+                    </button>
+                </form>
+                
+                <!-- 提示訊息 -->
+                <div class="alert alert-warning mt-4">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>注意事項：</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>此連結可能有下載次數或時效限制</li>
+                        <li>請確保您信任檔案來源</li>
+                        {% if share_link.max_downloads %}
+                        <li>此檔案還可以下載 <strong>{{ share_link.max_downloads|add:share_link.download_count|add:"-"|add:share_link.download_count }}</strong> 次</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card-footer text-center text-muted">
+                <small>
+                    <i class="fas fa-shield-alt"></i> 
+                    由本地端儲存系統提供安全分享
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

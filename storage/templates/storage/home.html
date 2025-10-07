@@ -1,0 +1,711 @@
+<!-- templates/storage/home.html -->
+{% extends 'base.html' %}
+{% block title %}首頁 - {{ block.super }}{% endblock %}
+
+{% block sidebar %}
+<!-- 手機版底部導航列 (固定在底部) -->
+<div class="mobile-bottom-nav d-xl-none">
+    <div class="nav-item" onclick="triggerFileUpload()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span>上傳</span>
+    </div>
+    <div class="nav-item" data-bs-toggle="modal" data-bs-target="#folderModal">
+        <i class="fas fa-folder-plus"></i>
+        <span>新資料夾</span>
+    </div>
+    <a href="{% url 'storage:home' %}" class="nav-item">
+        <i class="fas fa-home"></i>
+        <span>首頁</span>
+    </a>
+    <div class="nav-item" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+        <span>更多</span>
+    </div>
+</div>
+
+<!-- 手機版滑出選單 -->
+<div class="mobile-slide-menu" id="mobileMenu">
+    <div class="menu-header">
+        <h5>功能選單</h5>
+        <button class="btn-close" onclick="toggleMobileMenu()"></button>
+    </div>
+    <div class="menu-body">
+        <!-- 快速操作 -->
+        <div class="menu-section">
+            <h6 class="section-title">快速操作</h6>
+            <button type="button" class="list-group-item list-group-item-action" onclick="triggerFileUpload()">
+                <i class="fas fa-cloud-upload-alt text-primary"></i>
+                <span>上傳檔案</span>
+            </button>
+            <button class="menu-item" data-bs-toggle="modal" data-bs-target="#folderModal" onclick="toggleMobileMenu();">
+                <i class="fas fa-folder-plus text-warning"></i>
+                <span>建立資料夾</span>
+            </button>
+        </div>
+
+        <!-- 導航 -->
+        <div class="menu-section">
+            <h6 class="section-title">導航</h6>
+            <a href="{% url 'storage:home' %}" class="menu-item">
+                <i class="fas fa-home text-secondary"></i>
+                <span>我的檔案</span>
+            </a>
+            {% if current_folder %}
+            <a href="{% url 'storage:home' %}{% if current_folder.parent %}?folder={{ current_folder.parent.pk }}{% endif %}" 
+               class="menu-item">
+                <i class="fas fa-arrow-left text-info"></i>
+                <span>返回上層</span>
+            </a>
+            {% endif %}
+            <a href="{% url 'storage:storage_stats' %}" class="menu-item">
+                <i class="fas fa-chart-bar text-success"></i>
+                <span>使用統計與個人資料</span>
+            </a>
+            <a href="{% url 'storage:trash' %}" class="menu-item">
+                <i class="fas fa-trash text-danger"></i>
+                <span>回收站</span>
+            </a>
+            <a href="{% url 'storage:duplicates' %}" class="menu-item">
+                <i class="fas fa-clone text-info"></i>
+                <span>重複檔案</span>
+            </a>
+        </div>
+
+        <!-- 快速存取 -->
+        {% if folders %}
+        <div class="menu-section">
+            <h6 class="section-title">快速存取</h6>
+            {% for folder in folders|slice:":5" %}
+            <a href="{% url 'storage:home' %}?folder={{ folder.pk }}" class="menu-item">
+                <i class="fas fa-folder text-warning"></i>
+                <span>{{ folder.name|truncatechars:25 }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- 儲存空間 -->
+        <div class="menu-section">
+            <h6 class="section-title">儲存空間</h6>
+            <div class="storage-info-mobile">
+                <div class="progress mb-2" style="height: 8px;">
+                    <div class="progress-bar" style="width: 25%"></div>
+                </div>
+                <small class="text-muted">已使用 2.5 GB / 10 GB</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 手機版遮罩層 -->
+<div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+
+<!-- 桌面版側邊欄 (保持原樣) -->
+<div class="sidebar d-none d-xl-block" id="sidebar">
+    <div class="list-group list-group-flush">
+        <!-- 原本的桌面版側邊欄內容 -->
+        <button type="button" class="list-group-item list-group-item-action" onclick="triggerFileUpload()">
+            <i class="fas fa-cloud-upload-alt text-primary"></i>
+            <span>上傳檔案</span>
+        </button>
+        
+        <button type="button" class="list-group-item list-group-item-action" 
+                data-bs-toggle="modal" data-bs-target="#folderModal">
+            <i class="fas fa-folder-plus text-warning"></i>
+            <span>建立資料夾</span>
+        </button>
+        
+        <div class="divider"></div>
+        
+        <a href="{% url 'storage:home' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-home text-secondary"></i>
+            <span>我的檔案</span>
+        </a>
+        <a href="{% url 'storage:trash' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-trash text-danger"></i>
+            <span>回收站</span>
+        </a>
+        <a href="{% url 'storage:duplicates' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-clone text-info"></i>
+            <span>重複檔案</span>
+        </a>
+        {% if current_folder %}
+        <a href="{% url 'storage:home' %}{% if current_folder.parent %}?folder={{ current_folder.parent.pk }}{% endif %}" 
+           class="list-group-item list-group-item-action">
+            <i class="fas fa-arrow-left text-info"></i>
+            <span>返回上層</span>
+        </a>
+        {% endif %}
+        
+        <div class="divider"></div>
+        
+        <a href="{% url 'storage:storage_stats' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-chart-bar text-success"></i>
+            <span>使用統計與個人資料</span>
+        </a>
+        <a href="{% url 'storage:manage_shares' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-share-alt text-info"></i>
+            <span>管理分享連結</span>
+        </a>
+        {% if folders %}
+        <div class="divider"></div>
+        <div class="px-3 py-2">
+            <small class="text-muted">快速存取</small>
+        </div>
+        {% for folder in folders|slice:":5" %}
+        <a href="{% url 'storage:home' %}?folder={{ folder.pk }}" 
+           class="list-group-item list-group-item-action">
+            <i class="fas fa-folder text-warning"></i>
+            <span>{{ folder.name|truncatechars:20 }}</span>
+        </a>
+        {% endfor %}
+        {% endif %}
+        
+        <!-- 儲存空間資訊 -->
+        <div class="divider"></div>
+        <div class="px-3 py-3">
+            <div class="storage-info">
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar" id="storage-progress"></div>
+                </div>
+                <small class="text-muted d-block mt-1">已使用 {{ usage_percentage|floatformat:1 }}%</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 手機版遮罩層 -->
+<div class="sidebar-overlay d-xl-none" onclick="toggleSidebar()"></div>
+
+<style>
+    /* 側邊欄遮罩層 */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1019;
+    }
+    
+    .sidebar.show ~ .sidebar-overlay {
+        display: block;
+    }
+    
+    /* 儲存空間資訊樣式 */
+    .storage-info {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 8px;
+    }
+    
+    .storage-info .progress {
+        background: #e0e0e0;
+    }
+    
+    .storage-info .progress-bar {
+        background: #1a73e8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2><i class="fas fa-home"></i> 歡迎使用本地端儲存系統</h2>
+
+{% if search_query %}
+    <div class="alert alert-info">
+        <i class="fas fa-search"></i> 搜尋結果：「{{ search_query }}」
+        {% if not folders and not files %}
+            - 沒有找到相關檔案或資料夾
+        {% else %}
+            - 找到 {{ folders|length }} 個資料夾，{{ files|length }} 個檔案
+        {% endif %}
+    </div>
+{% endif %}
+{% if user.is_authenticated %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> 
+        歡迎回來，{{ user.username }}！
+    </div>
+                    
+<!-- 隱藏的檔案輸入 -->
+<form id="uploadForm" method="post" action="{% url 'storage:file_upload' %}" enctype="multipart/form-data" style="display: none;">
+    {% csrf_token %}
+    <input type="file" id="fileInput" name="file" multiple>
+    <input type="hidden" name="folder_id" id="folderId" value="{% if current_folder %}{{ current_folder.pk }}{% endif %}">
+</form>
+
+<!-- 全頁面拖曳提示 -->
+<div id="dragDropOverlay" class="drag-drop-overlay">
+    <div class="drag-drop-content">
+        <i class="fas fa-cloud-upload-alt fa-5x mb-3"></i>
+        <h3>拖曳檔案到這裡上傳</h3>
+        <p>支援多檔案上傳</p>
+    </div>
+</div>
+<!-- 右下角上傳進度通知 -->
+<div id="uploadNotification" class="upload-notification">
+    <div class="upload-notification-header">
+        <span><i class="fas fa-cloud-upload-alt"></i> 上傳中...</span>
+        <button onclick="closeUploadNotification()" class="btn-close-notification">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="upload-notification-body" id="uploadList">
+        <!-- 上傳項目會動態添加到這裡 -->
+    </div>
+</div>
+
+<!-- 檔案列表區域 -->
+<div class="row mt-4">
+<div class="col-12">
+<div class="card">
+<div class="card-header d-flex justify-content-between align-items-center">
+<h5><i class="fas fa-file"></i> 我的檔案與資料夾</h5>
+<button type="button" class="btn btn-sm btn-outline-primary" onclick="refreshFileList()">
+    <i class="fas fa-refresh"></i> 重新整理
+</button>
+</div>
+<div class="card-body">
+{% if current_folder %}
+<nav aria-label="breadcrumb" class="mb-3">
+<ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{% url 'storage:home' %}">
+            <i class="fas fa-home"></i> 根目錄
+        </a>
+    </li>
+    {% if current_folder.parent %}
+        <li class="breadcrumb-item">
+            <a href="{% url 'storage:home' %}?folder={{ current_folder.parent.pk }}">
+                {{ current_folder.parent.name }}
+            </a>
+        </li>
+    {% endif %}
+    <li class="breadcrumb-item active" aria-current="page">
+        <i class="fas fa-folder"></i> {{ current_folder.name }}
+    </li>
+</ol>
+</nav>
+{% endif %}
+
+<!-- 資料夾列表 -->
+{% if folders %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0">
+        <i class="fas fa-folder text-warning"></i> 資料夾 ({{ folders|length }})
+    </h6>
+    
+        <!-- 資料夾批量操作按鈕 -->
+        <div id="folderBatchButtons" style="display: none;">
+            <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-primary" onclick="selectAllFolders()">
+                    <i class="fas fa-check-square"></i> 全選
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="deselectAllFolders()">
+                    <i class="fas fa-square"></i> 取消
+                </button>
+                <button type="button" class="btn btn-outline-success" onclick="batchDownloadFolders()">
+                    <i class="fas fa-download"></i> 下載 (<span id="selectedFolderCount">0</span>)
+                </button>
+                <button type="button" class="btn btn-outline-danger" onclick="batchDeleteFolders()">
+                    <i class="fas fa-trash"></i> 刪除
+                </button>
+            </div>
+        </div>
+    </div>
+            <div class="row">
+                {% for folder in folders %}
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card folder-item h-100" data-folder-url="{% url 'storage:home' %}?folder={{ folder.pk }}" style="cursor: pointer;">
+                            <!-- 新增：批量選擇勾選框 -->
+                            <div class="position-absolute top-0 start-0 p-2" style="z-index: 5;">
+                                <input type="checkbox" class="form-check-input folder-checkbox" 
+                                    value="{{ folder.pk }}" 
+                                    data-foldername="{{ folder.name }}"
+                                    onclick="event.stopPropagation(); updateBatchButtons();">
+                            </div>
+                            
+                            <div class="card-body text-center">
+                                <i class="fas fa-folder fa-3x text-warning mb-2"></i>
+                                <h6 class="card-title">{{ folder.name }}</h6>
+                                <small class="text-muted">{{ folder.created_at|date:"Y-m-d" }}</small>
+                                <div class="mt-2">
+                                    <a href="{% url 'storage:folder_delete' folder.pk %}" 
+                                    class="btn btn-sm btn-outline-danger"
+                                    onclick="event.stopPropagation(); return confirm('確定要刪除此資料夾嗎？');">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- 檔案列表 -->
+{% if files %}
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0">
+        <i class="fas fa-file text-primary"></i> 檔案 ({{ files|length }})
+    </h6>
+    
+    <!-- 批量操作按鈕 -->
+    <div id="batchButtons" style="display: none;">
+        <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-primary" onclick="selectAll()">
+                <i class="fas fa-check-square"></i> 全選
+            </button>
+            <button type="button" class="btn btn-outline-secondary" onclick="deselectAll()">
+                <i class="fas fa-square"></i> 取消全選
+            </button>
+            <button type="button" class="btn btn-outline-success" onclick="batchDownload()">
+                <i class="fas fa-download"></i> 下載選中 (<span id="selectedCount">0</span>)
+            </button>
+            <button type="button" class="btn btn-outline-danger" onclick="batchDelete()">
+                <i class="fas fa-trash"></i> 刪除選中
+            </button>
+        </div>
+    </div>
+</div>
+            <div class="row">
+                {% for file in files %}
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card file-item h-100">
+                            <div class="position-absolute top-0 start-0 p-2" style="z-index: 5;">
+                                <input type="checkbox" class="form-check-input file-checkbox" 
+                                    value="{{ file.pk }}" 
+                                    data-filename="{{ file.name }}"
+                                    onclick="event.stopPropagation(); updateBatchButtons();">
+                            </div>
+                            <div class="card-body text-center">
+                                {% if file.is_image %}
+                                    {% if file.thumbnail %}
+                                        <img src="{{ file.thumbnail.url }}" alt="{{ file.name }}" 
+                                            class="img-thumbnail mb-2" 
+                                            style="max-width: 100px; max-height: 100px; object-fit: cover;">
+                                    {% else %}
+                                        <i class="fas fa-image fa-3x text-success mb-2"></i>
+                                    {% endif %}
+                                {% elif file.is_video %}
+                                    <i class="fas fa-play-circle fa-3x text-info mb-2"></i>
+                                {% elif file.is_audio %}
+                                    <i class="fas fa-music fa-3x text-warning mb-2"></i>
+                                {% elif file.is_document %}
+                                    <i class="fas fa-file-pdf fa-3x text-danger mb-2"></i>
+                                {% else %}
+                                    <i class="fas fa-file fa-3x text-secondary mb-2"></i>
+                                {% endif %}
+                                
+                                <h6 class="card-title">{{ file.name|truncatechars:20 }}</h6>
+                                <small class="text-muted d-block">{{ file.get_size_display }}</small>
+                                <small class="text-muted d-block">{{ file.created_at|date:"m-d H:i" }}</small>
+                                
+                                {% if file.tags %}
+                                <div class="mt-1">
+                                    {% for tag in file.get_tags_list %}
+                                    <a href="?search={{ tag }}" class="badge bg-secondary text-decoration-none me-1">
+                                        <i class="fas fa-tag"></i> {{ tag }}
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="mt-2">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        {% if file.is_image or file.is_video or file.is_audio %}
+                                            <button type="button" class="btn btn-outline-success" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#mediaModal{{ file.pk }}" 
+                                                    title="預覽">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        {% endif %}
+                                        <a href="{% url 'storage:file_download' file.pk %}" 
+                                            class="btn btn-outline-primary" title="下載">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <a href="{% url 'storage:create_share' file.pk %}" 
+                                            class="btn btn-outline-success" title="分享">
+                                            <i class="fas fa-share-alt"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-info" title="移動" 
+                                            data-bs-toggle="modal" data-bs-target="#moveFileModal{{ file.pk }}">
+                                            <i class="fas fa-arrows-alt"></i>
+                                        </button>
+                                        <a href="{% url 'storage:file_edit' file.pk %}" 
+                                            class="btn btn-outline-warning" title="編輯">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'storage:file_delete' file.pk %}" 
+                                            class="btn btn-outline-danger" title="刪除"
+                                            onclick="return confirm('確定要刪除此檔案嗎？');">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+                <!-- 如果沒有任何檔案或資料夾 -->
+                {% if not folders and not files %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-folder-open text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="text-muted mt-3">沒有檔案或資料夾</h4>
+                        <p class="text-muted">開始上傳檔案或建立資料夾吧！</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+            
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                請先登入以使用完整功能。
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-sign-in-alt"></i> 登入
+                </a>
+                <a href="{% url 'storage:register' %}" class="btn btn-success btn-lg">
+                    <i class="fas fa-user-plus"></i> 註冊
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 建立資料夾模態框 -->
+<div class="modal fade" id="folderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-folder-plus"></i> 建立新資料夾
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'storage:folder_create' %}{% if current_folder %}?folder={{ current_folder.pk }}{% endif %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <!-- 添加這些隱藏欄位 -->
+                    {% if current_folder %}
+                        <input type="hidden" name="parent_id" value="{{ current_folder.pk }}">
+                        <input type="hidden" name="current_folder_id" value="{{ current_folder.pk }}">
+                    {% endif %}
+                    <!-- 顯示當前位置 -->
+                    <div class="mb-3">
+                        <label class="form-label">建立位置：</label>
+                        <div class="alert alert-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            {% if current_folder %}
+                                {{ current_folder.get_path }}
+                            {% else %}
+                                根目錄
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- 隱藏欄位：父資料夾ID -->
+                    {% if current_folder %}
+                        <input type="hidden" name="parent_id" value="{{ current_folder.pk }}">
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="folderName" class="form-label">
+                            <i class="fas fa-folder"></i> 資料夾名稱
+                        </label>
+                        <input type="text" class="form-control" name="name" id="folderName" 
+                               placeholder="輸入資料夾名稱..." required autocomplete="off">
+                        <small class="form-text text-muted">
+                            資料夾名稱不能與同層級的其他資料夾重複
+                        </small>
+                    </div>
+                    
+                    <!-- 快速建立選項 -->
+                    <div class="mb-3">
+                        <label class="form-label">快速建立常用資料夾：</label>
+                        <div class="btn-group-vertical w-100">
+                            <button type="button" class="btn btn-outline-secondary btn-sm mb-1" 
+                                    onclick="setFolderName('圖片')">
+                                <i class="fas fa-image"></i> 圖片
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mb-1" 
+                                    onclick="setFolderName('影片')">
+                                <i class="fas fa-video"></i> 影片
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mb-1" 
+                                    onclick="setFolderName('音樂')">
+                                <i class="fas fa-music"></i> 音樂
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                    onclick="setFolderName('文件')">
+                                <i class="fas fa-file-alt"></i> 文件
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-folder-plus"></i> 建立資料夾
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<!-- 移動檔案 Modal 迴圈 -->
+{% for file in files %}
+<div class="modal fade" id="moveFileModal{{ file.pk }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">移動檔案：{{ file.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'storage:file_move' file.pk %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="target_folder{{ file.pk }}" class="form-label">選擇目標資料夾</label>
+                        <select class="form-control" name="folder_id" id="target_folder{{ file.pk }}">
+                            <option value="">根目錄</option>
+                            {% for folder in folders %}
+                                <option value="{{ folder.pk }}" 
+                                    {% if file.folder_id == folder.pk %}selected{% endif %}>
+                                    {{ folder.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">移動</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- 媒體預覽 Modal 迴圈 -->
+{% for file in files %}
+    {% if file.is_image or file.is_video or file.is_audio %}
+        <div class="modal fade" id="mediaModal{{ file.pk }}" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas {% if file.is_image %}fa-image{% elif file.is_video %}fa-video{% else %}fa-music{% endif %}"></i>
+                            {{ file.name }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-1 position-relative">
+                        <!-- 左右切換按鈕 -->
+                        {% if file.prev_media %}
+                            <button type="button" 
+                                    class="btn btn-dark position-absolute start-0 top-50 translate-middle-y ms-2" 
+                                    style="z-index: 10; opacity: 0.7;"
+                                    onclick="switchMedia('{{ file.prev_media.pk }}')">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                        {% endif %}
+                        
+                        {% if file.next_media %}
+                            <button type="button" 
+                                    class="btn btn-dark position-absolute end-0 top-50 translate-middle-y me-2" 
+                                    style="z-index: 10; opacity: 0.7;"
+                                    onclick="switchMedia('{{ file.next_media.pk }}')">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        {% endif %}
+                        
+                        <div class="text-center">
+                            {% if file.is_image %}
+                                <img src="{% url 'storage:file_preview' file.pk %}" 
+                                     alt="{{ file.name }}" 
+                                     class="img-fluid rounded"
+                                     style="max-height: 70vh; object-fit: contain;">
+                            {% elif file.is_video %}
+                                <video controls class="rounded" style="max-height: 70vh; max-width: 100%;">
+                                    <source src="{% url 'storage:file_preview' file.pk %}" type="{{ file.file_type }}">
+                                </video>
+                            {% elif file.is_audio %}
+                                <div class="audio-player-container p-4">
+                                    <i class="fas fa-music fa-5x text-warning mb-3"></i>
+                                    <h5 class="mb-3">{{ file.name }}</h5>
+                                    <audio controls class="w-100">
+                                        <source src="{% url 'storage:file_preview' file.pk %}" type="{{ file.file_type }}">
+                                    </audio>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="{% url 'storage:file_download' file.pk %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-download"></i> 下載
+                        </a>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">關閉</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+{% endblock %}
+<!-- 底部導航欄 - 只在手機/平板顯示 -->
+{% block mobile_nav %}
+<nav class="mobile-bottom-nav">
+    <a href="javascript:void(0)" onclick="document.getElementById('fileInput').click();" class="nav-item">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span>上傳</span>
+    </a>
+    <a href="#" data-bs-toggle="modal" data-bs-target="#folderModal" class="nav-item">
+        <i class="fas fa-folder-plus"></i>
+        <span>新增</span>
+    </a>
+    <div class="nav-item dropdown">
+        <a class="d-flex flex-column align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-bars"></i>
+            <span>更多</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><h6 class="dropdown-header">導航</h6></li>
+            <li><a class="dropdown-item" href="{% url 'storage:storage_stats' %}">
+                <i class="fas fa-chart-bar text-success"></i> 統計與個人資料
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'storage:trash' %}">
+                <i class="fas fa-trash text-danger"></i> 回收站
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'storage:duplicates' %}">
+                <i class="fas fa-clone text-info"></i> 重複檔案
+            </a></li>
+        </ul>
+    </div>
+</nav>
+{% endblock %}
