@@ -42,63 +42,60 @@
 - pip（Python 套件管理工具）
 
 ---
-
-## 🚀 快速開始
-
-### 1️⃣ 建立虛擬環境（選用）
-
-**Windows:**
-python -m venv venv
-venv\Scripts\activate
-
-**macOS/Linux:**
-python3 -m venv venv
-source venv/bin/activate
----
 ## 1.建立虛擬環境 (可用可不用)
 Windows:
+```bash
 python -m venv venv
 venv\Scripts\activate
+```
 macOS/Linux:
+```bash
 python3 -m venv venv
 source venv/bin/activate
-
+```
 ## 2.安裝相依套件
+```bash
 pip install -r requirements.txt
-
+```
 ## 3.設定環境變數
+```bash
 copy .env.example .env  # Windows
 cp .env.example .env    # macOS/Linux
-
+```
 編輯 .env 檔案，填入你的設定： 
->SECRET_KEY=你的Django密鑰
->DEBUG=True
->DB_NAME=local_storage_db   
->DB_USER=root
->DB_PASSWORD=你的MySQL密碼
->DB_HOST=localhost
->DB_PORT=3306
+- SECRET_KEY=你的Django密鑰
+- DEBUG=True
+- DB_NAME=local_storage_db   
+- DB_USER=root
+- DB_PASSWORD=你的MySQL密碼
+- DB_HOST=localhost
+- DB_PORT=3306
 
 ## 4.執行資料庫遷移
+```bash
 python manage.py migrate
-
+```
 ## 5.建立管理員帳號
+```bash
 python manage.py createsuperuser
-
+```
 ## 6.啟動開發伺服器
+```bash
 python manage.py runserver
-
+```
 
 ## ⚙️ 進階設定
 修改儲存配額
 編輯 storage/views.py 中的 get_user_quota 函數：
->pythontotal_system_storage = 100 * 1024 * 1024 * 1024  # 改為你想要的容量
-
+```python
+pythontotal_system_storage = 100 * 1024 * 1024 * 1024  # 改為你想要的容量
+```
 修改檔案上傳大小限制
 編輯 settings.py：
->pythonFILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB（單位：bytes）
->DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB
-
+```python
+pythonFILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB（單位：bytes）
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB
+```
 ## 🐛 常見問題
 <details>
 <summary><b>Q: 上傳檔案失敗怎麼辦？</b></summary>
@@ -124,6 +121,6 @@ MySQL 服務是否啟動
 </details>
 
 
-👨‍💻 作者
-GitHub: @triangle1009
-Email:  chenwilly1009@gmail.com
+## 👨‍💻 作者
+- GitHub: @triangle1009
+- Email:  chenwilly1009@gmail.com
