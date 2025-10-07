@@ -77,7 +77,12 @@ python manage.py migrate
 ```bash
 python manage.py createsuperuser
 ```
-## 6.啟動開發伺服器
+## 6.填加IP位置
+在setting.py 中增加這行 (或是在ALLOWED_HOSTS中更改也可以)
+```python
+ALLOWED_HOSTS += ['Your device IP', 'your-domain.com']
+```
+## 7.啟動開發伺服器
 ```bash
 python manage.py runserver
 ```
