@@ -1,9 +1,13 @@
-
 # 📦 本地端儲存系統
 
 一個基於 Django 開發的個人雲端儲存系統，擁有 Google Drive 風格的現代化介面。
-![專案功能預覽](/view.mkv)
-music url:https://www.youtube.com/watch?v=kN0En78zRwU
+
+## 🎥 專案展示
+
+> **功能展示影片**: [點擊觀看 view.mkv](view.mkv)
+> 
+> **背景音樂**: [YouTube - Music Link](https://www.youtube.com/watch?v=kN0En78zRwU)
+
 ---
 
 ## ✨ 功能特色
@@ -37,6 +41,19 @@ music url:https://www.youtube.com/watch?v=kN0En78zRwU
 - MySQL 8.0 或以上
 - pip（Python 套件管理工具）
 
+---
+
+## 🚀 快速開始
+
+### 1️⃣ 建立虛擬環境（選用）
+
+**Windows:**
+python -m venv venv
+venv\Scripts\activate
+
+**macOS/Linux:**
+python3 -m venv venv
+source venv/bin/activate
 ---
 ## 1.建立虛擬環境 (可用可不用)
 Windows:
