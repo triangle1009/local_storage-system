@@ -5,8 +5,6 @@
 ## 🎥 專案展示
 
 > **功能展示影片**: [點擊觀看](https://youtu.be/BgB7bYCsa7g)
-> 
-> **背景音樂**: [YouTube - Music Link](https://www.youtube.com/watch?v=kN0En78zRwU)
 
 ---
 
