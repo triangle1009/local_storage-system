@@ -1,0 +1,25 @@
+# Python
+*.pyc
+__pycache__/
+*.py[cod]
+
+# Django
+*.log
+db.sqlite3
+/media/
+/staticfiles/
+
+# 環境變數（重要！）
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# 虛擬環境
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
